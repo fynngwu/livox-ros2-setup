@@ -1,0 +1,29 @@
+FROM ros:humble
+
+# 配置中科大 apt 源
+RUN sed -i 's|http://archive.ubuntu.com|https://mirrors.ustc.edu.cn|g' /etc/apt/sources.list && \
+    sed -i 's|http://security.ubuntu.com|https://mirrors.ustc.edu.cn|g' /etc/apt/sources.list
+
+# 配置阿里云 ROS2 源 (ros2.sources 是软链接)
+RUN sed -i 's|http://packages.ros.org/ros2/ubuntu|https://mirrors.aliyun.com/ros2/ubuntu|g' /usr/share/ros-apt-source/ros2.sources
+
+# apt update 并预装基础依赖
+RUN apt-get update && apt-get install -y \
+    libpcl-dev \
+    libeigen3-dev \
+    libboost-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建非 root 测试用户
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# 设置默认用户
+USER testuser
+WORKDIR /home/testuser
+
+# 默认加载 ROS2 环境
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+
+# 入口点：运行挂载的安装脚本
+CMD ["bash", "-c", "source /opt/ros/humble/setup.bash && bash /tmp/install.sh"]

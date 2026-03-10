@@ -1,0 +1,12 @@
+# ROS2 工作空间
+build/
+install/
+log/
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
